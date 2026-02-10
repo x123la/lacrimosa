@@ -50,32 +50,32 @@ The codebase strongly emphasizes three constraints:
 
 ```mermaid
 flowchart LR
-    U[Developer / Operator] --> CLI[cz CLI]
-    U --> UI[React UI<br/>crates/cz-hub/ui]
+    U["Developer / Operator"] --> CLI["cz CLI"]
+    U --> UI["React UI<br/>crates/cz-hub/ui"]
 
-    CLI --> HUB[cz-hub API + WS]
+    CLI --> HUB["cz-hub API + WS"]
     UI --> HUB
 
-    CLI --> IO[cz-io sequencer]
-    IO --> JOURNAL[(journal.db mmap)]
-    IO --> IPC[/tmp/cz-io.sock]
+    CLI --> IO["cz-io sequencer"]
+    IO --> JOURNAL[("journal.db mmap")]
+    IO --> IPC["/tmp/cz-io.sock"]
 
     HUB --> JOURNAL
     HUB --> IPC
-    HUB --> AUTH[Auth layer + audit log]
-    HUB --> REG[Connector registry]
-    HUB --> ALERT[Alert engine]
-    HUB --> TRACE[Trace store]
-    HUB --> PIPE[Pipeline manager]
-    HUB --> DASH[Dashboard manager]
+    HUB --> AUTH["Auth layer + audit log"]
+    HUB --> REG["Connector registry"]
+    HUB --> ALERT["Alert engine"]
+    HUB --> TRACE["Trace store"]
+    HUB --> PIPE["Pipeline manager"]
+    HUB --> DASH["Dashboard manager"]
 
-    REG --> BUF[(Buffered stream events)]
-    BUF --> QUERY[Query parser + executor]
+    REG --> BUF[("Buffered stream events")]
+    BUF --> QUERY["Query parser + executor"]
     QUERY --> UI
 
-    IO --> METRICS[Atomic counters]
+    IO --> METRICS["Atomic counters"]
     METRICS --> HUB
-    HUB --> WS[WebSocket metrics stream]
+    HUB --> WS["WebSocket metrics stream"]
     WS --> UI
 ```
 
@@ -822,4 +822,3 @@ If you want a concrete next-step roadmap, begin with:
 2. dashboard widgets with real query-backed rendering
 3. connector maturity and ingestion reliability features
 4. stronger end-to-end tests across auth + telemetry + UI workflows
-
