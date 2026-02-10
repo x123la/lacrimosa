@@ -1,0 +1,16 @@
+[package]
+name = "cz-io"
+version = "0.1.0"
+edition = "2021"
+description = "LACRIMOSA: The Engine — mmap journal, ring buffer, io_uring event loop"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
+[dependencies]
+cz-core = { path = "../cz-core" }
+memmap2 = "0.9"
+io-uring = "0.7"
+crc32fast = "1.4"
+
+

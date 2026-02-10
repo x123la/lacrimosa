@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DEFAULT="/home/x123la/repos/New_Project"
+REPO_ROOT="${LACRIMOSA_ROOT:-$REPO_DEFAULT}"
+NO_BUILD=0
+
+usage() {
+  cat <<'EOF'
+lacrimosa - one-command launcher for LACRIMOSA
+
+Usage:
+  lacrimosa [--no-build] [--help]
+
+Options:
+  --no-build  Skip UI and Rust build checks.
+  --help      Show this help.
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-build)
+      NO_BUILD=1
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "[lacrimosa] Unknown argument: $1" >&2
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ ! -f "$REPO_ROOT/Cargo.toml" || ! -d "$REPO_ROOT/crates/cz-hub/ui" ]]; then
+  echo "[lacrimosa] Repo not found at: $REPO_ROOT" >&2
+  echo "[lacrimosa] Set LACRIMOSA_ROOT to your repo path if needed." >&2
+  exit 1
+fi
+
+cd "$REPO_ROOT"
+mkdir -p "$REPO_ROOT/.loki"
+
+cleanup() {
+  if [[ -n "${CZ_PID:-}" ]] && kill -0 "$CZ_PID" 2>/dev/null; then
+    echo "[lacrimosa] Stopping sequencer (pid $CZ_PID)..."
+    kill "$CZ_PID" 2>/dev/null || true
+    wait "$CZ_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+if [[ "$NO_BUILD" -eq 0 ]]; then
+  DIST_INDEX="$REPO_ROOT/crates/cz-hub/ui/dist/index.html"
+  NEED_UI_BUILD=0
+  if [[ ! -f "$DIST_INDEX" ]]; then
+    NEED_UI_BUILD=1
+  elif find "$REPO_ROOT/crates/cz-hub/ui/src" -type f -newer "$DIST_INDEX" | grep -q .; then
+    NEED_UI_BUILD=1
+  elif [[ "$REPO_ROOT/crates/cz-hub/ui/package.json" -nt "$DIST_INDEX" ]]; then
+    NEED_UI_BUILD=1
+  fi
+
+  if [[ "$NEED_UI_BUILD" -eq 1 ]]; then
+    echo "[lacrimosa] Building UI..."
+    pushd "$REPO_ROOT/crates/cz-hub/ui" >/dev/null
+    if [[ ! -d node_modules ]]; then
+      npm install
+    fi
+    npm run build
+    popd >/dev/null
+  else
+    echo "[lacrimosa] UI build is up to date."
+  fi
+
+  echo "[lacrimosa] Building Rust binaries..."
+  cargo build -p cz-cli -p cz-hub >/dev/null
+fi
+
+pkill -f "target/debug/cz-hub" >/dev/null 2>&1 || true
+pkill -f "cargo run -p cz-hub" >/dev/null 2>&1 || true
+pkill -f "target/debug/cz start --journal" >/dev/null 2>&1 || true
+pkill -f "cargo run -p cz-cli -- start" >/dev/null 2>&1 || true
+
+echo "[lacrimosa] Starting sequencer..."
+"$REPO_ROOT/target/debug/cz" start --journal "$REPO_ROOT/journal.db" > "$REPO_ROOT/.loki/lacrimosa-cz.log" 2>&1 &
+CZ_PID=$!
+sleep 1
+if ! kill -0 "$CZ_PID" 2>/dev/null; then
+  echo "[lacrimosa] Sequencer failed to start. Recent logs:" >&2
+  tail -n 40 "$REPO_ROOT/.loki/lacrimosa-cz.log" >&2 || true
+  exit 1
+fi
+
+echo "[lacrimosa] Launching Control Center at http://127.0.0.1:3000"
+echo "[lacrimosa] Root API key will be printed below by cz-hub:"
+"$REPO_ROOT/target/debug/cz-hub" --journals "$REPO_ROOT/journal.db" --bind "127.0.0.1:3000" | tee "$REPO_ROOT/server.log"

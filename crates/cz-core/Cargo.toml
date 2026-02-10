@@ -1,0 +1,10 @@
+[package]
+name = "cz-core"
+version = "0.1.0"
+edition = "2021"
+description = "LACRIMOSA: The Physics — zero-copy event atoms for a formally verified distributed sequencer"
+
+[dependencies]
+rkyv = { version = "0.8", features = ["unaligned"] }
+bytecheck = "0.8"
+

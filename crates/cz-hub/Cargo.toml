@@ -1,0 +1,33 @@
+[package]
+name = "cz-hub"
+version = "0.3.0"
+edition = "2021"
+description = "LACRIMOSA: Production Control Center"
+
+[dependencies]
+cz-core = { path = "../cz-core" }
+cz-io = { path = "../cz-io" }
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tower-http = { version = "0.5", features = ["cors", "fs"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+futures-util = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.0", features = ["derive"] }
+rand = "0.8"
+toml = "0.8"
+uuid = { version = "1.0", features = ["v4", "fast-rng", "macro-diagnostics"] }
+async-trait = "0.1"
+sha2 = "0.10"
+regex = "1.10"
+jsonwebtoken = "9.2"
+rdkafka = { version = "0.36", features = ["cmake-build"], optional = true }
+async-nats = { version = "0.33", optional = true }
+
+[features]
+default = []
+kafka = ["rdkafka"]
+nats = ["async-nats"]

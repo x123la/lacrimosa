@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/cz-core",
+    "crates/cz-verify",
+    "crates/cz-io",
+    "crates/cz-cli",
+    "crates/cz-hub",
+]

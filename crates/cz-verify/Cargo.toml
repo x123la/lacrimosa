@@ -1,0 +1,11 @@
+[package]
+name = "cz-verify"
+version = "0.1.0"
+edition = "2021"
+description = "LACRIMOSA: The Law — Kani formal verification proofs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
+[dependencies]
+cz-core = { path = "../cz-core" }

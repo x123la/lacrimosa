@@ -1,0 +1,17 @@
+# Build outputs
+target/
+
+# Frontend artifacts
+crates/cz-hub/ui/node_modules/
+crates/cz-hub/ui/dist/
+
+# Runtime/local data
+.loki/
+server.log
+journal.db
+*.db
+*.log
+
+# Editor/OS
+.DS_Store
+Thumbs.db
